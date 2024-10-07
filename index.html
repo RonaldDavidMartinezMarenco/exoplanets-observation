@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milky Way Visualization</title>
+    <title>Observation of Exoplanets</title>
+    <link rel="icon" href="images/1789881.png" type="image/png">
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -22,8 +23,147 @@
             left: 0;
             pointer-events: none;
         }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #diameterRange {
+            -webkit-appearance: none;
+            width: 250px;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s ease;
+        }
+    
+        #diameterRange:hover {
+            opacity: 1;
+        }
+        #diameterRange::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            transition: background .3s ease;
+        }
+        #diameterRange::-webkit-slider-thumb:hover {
+            background: #0578d7;
+        }
+        #diameterRange::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0578d7;
+            cursor: pointer;
+            transition: background .3s ease;
+        }
+        #diameterRange::-moz-range-thumb:hover {
+            background: #0578d7;
+        }
+        #diameterValue {
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        input[type="number"] {
+            font-size: 16px;
+            padding: 5px;
+            width: 70px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+        }
+        select {
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #charPlanetDropdown {
+        background-color: #2e2e2e;
+        border: 1px solid #0578d7;
+        border-radius: 10px;
+        color: white;
+        padding: 8px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        outline: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: box-shadow 0.3s ease;
+    }
+
+    #charPlanetDropdown option {
+        background-color: #2e2e2e;
+        color: white;
+        padding: 5px;
+    }
+
+    #charPlanetDropdown:hover {
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    #charPlanetDropdown:focus {
+        border-color: #3ca2d4;
+        box-shadow: 0 0 10px rgba(102, 204, 255, 0.8);
+    }
+
+    #charPlanetDropdown::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    #charPlanetDropdown::-webkit-scrollbar-thumb {
+        background-color: #0578d7;
+        border-radius: 10px;
+    }
+
+    #charPlanetDropdown::-webkit-scrollbar-track {
+        background: #2e2e2e;
+        border-radius: 10px;
+    }
+
+    #charPlanetContainer label {
+        margin-bottom: 5px; /* Espacio entre la etiqueta y el dropdown */
+    }
+
     </style>
 </head>
 <body>
+    <div id="controls">
+        <!-- Slider para ajustar el diámetro -->
+        <label for="diameterRange">Diameter:</label>
+        <div style="display: flex; align-items: center;">
+            <input type="range" id="diameterRange" min="5" max="15" step="0.1" value="6">
+            
+            <span id="diameterValue">6</span>
+        </div>
+    </div>
+    <div id="charPlanetContainer" style="position: absolute; top: 100px; left: 10px;">
+        <select id="charPlanetDropdown" size="5" style="overflow-y: auto; width: 160px; height: 70px;">
+            <option value="">Select Exoplanet</option>
+        </select>
+    </div>
+
     <script type="module" src="/main.js"></script>
+    <script>
+        // Lógica para manejar el slider del diámetro y actualizar el valor mostrado
+        document.getElementById('diameterRange').addEventListener('input', function(event) {
+            const diameter = event.target.value;
+            document.getElementById('diameterValue').textContent = diameter;
+        });
+    </script>
+        
 </html>
