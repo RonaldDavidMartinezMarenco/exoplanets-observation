@@ -1,20 +1,20 @@
-//Importamos librerias para visualizacion 3D usando JS
+//We import libraries for 3D visualization using JS
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import index, { GUI } from 'dat.gui'
-//Variables del programa
+
 let scene, camera, renderer, labelRenderer, controls,textureLoader;
 let planets = [];
 let labels = [];
 let planetsObservable = [];
-let planetsChar = []; //Planetas caracterizables
+let planetsChar = []; //Characterizable planets
 let diameter = 6;
 const SNR_THRESHOLD = 5;
 const snr0 = 100; // Valor base de SNR Telescopio
 const charPlanetDropdown = document.getElementById('charPlanetDropdown');
 
-//Llamamos al archivo json que determine los planetas observables
+//We call the json file that determines the observable planets
 function callingJson(){
   fetch('./output.json')
   .then(response => response.json())
@@ -23,16 +23,16 @@ function callingJson(){
       updateObservable(data);
       console.log("Exoplanetas observables y caracterizables:", planetsChar);
       console.log("Exoplanetas observales: ", planetsObservable);
-      // Renderizamos solo los planetas observables
-      renderPlanets(planetsChar);
-      //renderPlanets(planetsObservable); no lo renderizo ya que al aumentar el diametro puede generar mas planetas.
+      // We render only observable planets
+      renderPlanets(planetsChar);  
+    //renderPlanets(Observable planet); I don't render it because increasing the diameter can generate more planets.
   })
   .catch(error => console.error('Error al cargar el archivo JSON:', error));
 }
-//Muestra los planetas al iniciar al iniciar.
+//Show planets on startup.
 callingJson();
 
-//Mostrar valores delimitados por el diametro
+//Display values ​​delimited by diameter
 document.getElementById('diameterRange').addEventListener('input', function (event) {
   diameter = event.target.value;
   document.getElementById('diameterValue').innerText = diameter;
@@ -40,14 +40,15 @@ document.getElementById('diameterRange').addEventListener('input', function (eve
 
   callingJson();
 })
+
 function updateCharacterizablePlanets() {
-  // Vacía el dropdown actual
+  // Empty the current dropdown
   charPlanetDropdown.innerHTML = '<option value="">Select Exoplanet</option>';
   
-  // Rellena el dropdown con los planetas caracterizables
+ // Fill the dropdown with the characterizable planets
   planetsChar.forEach((planet, index) => {
       const option = document.createElement('option');
-      option.value = index;  // Guardamos el índice para acceder al planeta en el array
+      option.value = index;  // We save the index to access the planet in the array
       option.textContent = planet.Nombre_planeta;
       charPlanetDropdown.appendChild(option);
   });
@@ -57,21 +58,21 @@ charPlanetDropdown.addEventListener('change', function(event) {
   const selectedIndex = event.target.value;
   console.log("entre");
   if (selectedIndex !== "") {
-      const selectedPlanet = planetsChar[selectedIndex];
+    const selectedPlanet = planetsChar.find(p => p.Nombre_planeta === selectedPlanetName);
       console.log("hola");
-      // Busca el planeta en la escena
-      const planetMesh = planets.find(p => p.name === selectedPlanet.Nombre_planeta);
-      
-      if (planetMesh) {
+      if (selectedPlanet) {
+        const planetMesh = scene.getObjectByName(selectedPlanet.Nombre_planeta); // Obtén el mesh del planeta por su nombre
+        if(planetMesh){
+          // Usa controls.target y la posición del planeta
           controls.target.copy(planetMesh.position);
           camera.position.set(
               planetMesh.position.x + 200,
               planetMesh.position.y + 50,
               planetMesh.position.z + 200
-          );
-      }
-  }
-});
+        );
+        controls.update;
+      }     
+}}});
 
   function updateObservable(data){
     planetsChar = [];
@@ -83,17 +84,18 @@ charPlanetDropdown.addEventListener('change', function(event) {
         const PS = planet.PS; // PS [AU]
         const ES = planet.ES; // ES [pc]
 
-        // Cálculo de la SNR para determinar si es observable
+        // Calculating the SNR to determine if it is observable
+
         const snr = (snr0 * ((RStar * RP * (diameter / 6)) /((ES / 10) * PS)));
 
-        // Cálculo de la separabilidad para determinar si es caracterizable
+        // Calculating separability to determine if it is characterizable
         const ES_max = 15 * (diameter / 6) / PS;
         const isCharacterizable = ES <= ES_max;
 
         if(snr > SNR_THRESHOLD && ES<5){
           planetsObservable.push(planet);
         }
-        // Si cumple ambas condiciones, es observable y caracterizable
+        // If it meets both conditions, it is observable and characterizable
         if (snr > SNR_THRESHOLD && isCharacterizable && ES < 5) {
             planetsChar.push(planet);
         }
@@ -104,15 +106,15 @@ charPlanetDropdown.addEventListener('change', function(event) {
   function renderPlanets(planets) {
 
     planets.forEach((planet, index) => {
-        const distance = planet.R * 5000; // Ajustamos la distancia al sol (escala arbitraria)
-        const size = planet.RP * 0.5; // Ajustamos el tamaño del planeta
+        const distance = planet.R * 5000; // We adjust the distance to the sun (arbitrary scale)
+        const size = planet.RP * 0.5; // We adjust the size of the planet
 
         const angleStep = Math.PI / 5;
         const angle = angleStep * index;
         const x = Math.cos(angle) * distance;
         const z = Math.sin(angle) * distance;
 
-        // Aquí puedes asignar una textura genérica o específica si existe (decidimos textura de prueba por el tiempo)
+        // Here you can assign a generic or specific texture if it exists (we decided on test texture for the time)
         const texture = textureLoader.load('./image/muestraExoplaneta.png');
         const material = new THREE.MeshBasicMaterial({ map: texture });
         const geometry = new THREE.SphereGeometry(size, 32, 32);
@@ -138,7 +140,7 @@ function loadTexture(planetName) {
   };
   return textureLoader.load(textures[planetName]);
 }
-// Crea las orbitas para cada respectivo planeta
+// Create the orbits for each respective planet
 function createOrbit(distance) {
   const geometry = new THREE.RingGeometry(distance, distance + 0.1, 64);
   const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
@@ -179,7 +181,7 @@ function init() {
     addLabel(sun, "Sun");
 
     // Add planets
-    const scaleFactor = 0.1; // Factor de escala para reducir las distancias en caso tal de escalarlo, color en caso tal de no tener texturas
+    const scaleFactor = 0.1; // Scale factor to reduce distances in case of scaling it, color in case of not having textures
     const planetData = [
         {name: "Mercury", color: 0xC0C0C0, size: 3.2, distance: 28},
         {name: "Venus", color: 0xFFA500, size: 5.8, distance: 44},
@@ -193,13 +195,14 @@ function init() {
 
     planetData.forEach((planet,index) => {
       
-      const orbit = createOrbit(planet.distance); // Crea la órbita
-      scene.add(orbit); // Añade la órbita a la escena
+      const orbit = createOrbit(planet.distance); // Create the orbit
+      scene.add(orbit);// Add the orbit to the scene
       
-      const angleStep = Math.PI / 5; // Ajusta este valor para espaciar más o menos
-      const angle = angleStep * index; // Aumenta el ángulo con el índice
-      const x = Math.cos(angle) * planet.distance // Calcula la posición en x
-      const z = Math.sin(angle) * planet.distance // Calcula la posición en z
+      
+      const angleStep = Math.PI / 5; // Adjust this value to space more or less
+      const angle = angleStep * index; // Increase the angle with the index
+      const x = Math.cos(angle) * planet.distance // Calculate the position in x
+      const z = Math.sin(angle) * planet.distance // Calculate the position in z
      
       const texture = loadTexture(planet.name);
       const material = new THREE.MeshBasicMaterial({ map: texture });
